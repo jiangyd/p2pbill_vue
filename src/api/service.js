@@ -81,9 +81,9 @@ export const banklist_api = (page_index) => instance({
 })
 
 //获取银行卡信息
-export const getbankcard_api=(id)=>instance({
-  method:"get",
-  url:baseUrl+"/admin/bankcard?id="+id
+export const getbankcard_api = (id) => instance({
+    method: "get",
+    url: baseUrl + "/admin/bankcard?id=" + id
 })
 
 //添加银行卡
@@ -97,14 +97,14 @@ export const addbankcard_api = (name, card) => instance({
 })
 
 //更新银行卡
-export const updatebankcard_api=(id,name,card)=>instance({
-  method:"put",
-  url:baseUrl+"/admin/bankcard",
-  data:{
-    "id":id,
-    "name":name,
-    "card":card
-  }
+export const updatebankcard_api = (id, name, card) => instance({
+    method: "put",
+    url: baseUrl + "/admin/bankcard",
+    data: {
+        "id": id,
+        "name": name,
+        "card": card
+    }
 })
 
 //删除银行卡
@@ -122,23 +122,51 @@ export const p2plist_api = (page_index) => instance({
     url: baseUrl + "/admin/p2plist?page_index=" + page_index
 })
 
-//用户平台
+//用户平台列表
 export const myp2plist_api = (page_index) => instance({
     method: "get",
     url: baseUrl + "/admin/myp2plist?page_index=" + page_index
 })
 
+
 //添加用户平台
-export const addmyp2p_api=(p2p_id,account,password,card_id,phone)=>instance({
-    method:"post",
-    url:baseUrl+"/admin/myp2p",
-    data:{
-        "p2p_id":p2p_id,
-        "account":account,
-        "password":password,
-        "card_id":card_id,
-        "phone":phone
+export const addmyp2p_api = (p2p_id, account, password, card_id, phone) => instance({
+    method: "post",
+    url: baseUrl + "/admin/myp2p",
+    data: {
+        "p2p_id": p2p_id,
+        "account": account,
+        "password": password,
+        "card_id": card_id,
+        "phone": phone
     }
+})
+
+//修改用户平台
+export const modifymyp2p_api = (id, p2p_id, account, password, card_id, phone) => instance({
+        method: "put",
+        url: baseUrl + "/admin/myp2p",
+        data: {
+            "id": id,
+            "p2p_id": p2p_id,
+            "account": account,
+            "password": password,
+            "card_id": card_id,
+            "phone": phone
+        }
+    })
+    //删除用户平台
+export const delmyp2p_api = (id) => instance({
+    method: "delete",
+    url: baseUrl + "/admin/myp2p?id=" + id
+
+})
+
+
+//单个用户平台信息
+export const getmyp2pinfo_api = (id) => instance({
+    method: "get",
+    url: baseUrl + "/admin/myp2p?id=" + id
 })
 
 //用户资金流水记录
