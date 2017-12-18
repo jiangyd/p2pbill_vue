@@ -25,6 +25,8 @@ instance.interceptors.response.use(
         return response;
     },
     error => {
+        console.log(error)
+        //这边还有一个问题，调用某个URL出现404的时候，response是没有status这个值
         if (error.response.status == 401) {
             // this.$router.push({path:'/login'})
             router.push("/login")
@@ -179,4 +181,45 @@ export const billflowlist_api = (page_index) => instance({
 export const investlist_api = (page_index) => instance({
     method: "get",
     url: baseUrl + "/admin/investlist?page_index=" + page_index
+})
+
+//添加投资记录
+export const addinvest_api=(p2p_id,money,profit, start_time,end_time,lucre)=>instance({
+    method:"post",
+    url:baseUrl+"/admin/invest",
+    data:{
+        "p2p_id":p2p_id,
+        "money":money,
+        "profit":profit,
+        "start_time":start_time,
+        "end_time":end_time,
+        "lucre":lucre
+    }
+})
+
+//获取单个投资信息
+export const getinvest_api=(id)=>instance({
+    method:"get",
+    url:baseUrl+"/admin/invest?id="+id
+})
+
+//编辑投资记录
+export const modifyinvest_api=(id,p2p_id,money,profit,start_time,end_time,lucre)=>instance({
+    method:"put",
+    url:baseUrl+"/admin/invest",
+    data:{
+        "id":id,
+        "p2p_id":p2p_id,
+        "money":money,
+        "profit":profit,
+        "start_time":start_time,
+        "end_time":end_time,
+        "lucre":lucre
+    }
+})
+
+//删除投资记录
+export const delinvest_api=(id)=>instance({
+    method:"delete",
+    url:baseUrl+"/admin/invest"
 })

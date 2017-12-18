@@ -16,6 +16,12 @@
             </el-table-column>
             <el-table-column prop="end_time" label="结束时间" width="180">
             </el-table-column>
+                        <el-table-column label="操作" width="100">
+                <template slot-scope="scope">
+                    <el-button type="text" size="small" @click="getinvest(scope.row.id)">编辑</el-button>
+                    <el-button type="text" size="small" @click="delinvest(scope.row.id)">删除</el-button>
+                </template>
+            </el-table-column>
         </el-table>
         <div class="pagination">
             <el-pagination @current-change="handleCurrentChange" background layout="total,prev, pager, next" :total="total_count">
@@ -36,11 +42,11 @@
                     <el-input v-model="addinvest_form.profit" auto-complete="off" style="width:320px"></el-input>
                 </el-form-item>
                 <el-form-item label="开始日期">
-                    <el-date-picker v-model="value1" type="date" placeholder="选择开始日期" style="width:320px"></el-date-picker>
+                    <el-date-picker v-model="addinvest_form.start_time" type="date" value-format="yyyy-MM-dd" placeholder="选择开始日期" style="width:320px"></el-date-picker>
                 </el-form-item>
                 </el-date-picker>
                 <el-form-item label="到期日期">
-                    <el-date-picker v-model="value1" type="date" placeholder="选择到期日期" style="width:320px"></el-date-picker>
+                    <el-date-picker v-model="addinvest_form.end_time" type="date" value-format="yyyy-MM-dd" placeholder="选择到期日期" style="width:320px"></el-date-picker>
                 </el-form-item>
                 <el-form-item label="预期收益">
                     <el-input v-model="addinvest_form.lucre" auto-complete="off" style="width:320px"></el-input>
@@ -48,7 +54,39 @@
             </el-form>
             <span slot="footer" class="dialog-footer">
     <el-button @click="handleClose">取 消</el-button>
-    <el-button type="primary" @click="addmyp2p_fun">确 定</el-button>
+    <el-button type="primary" @click="addinvest_fun">确 定</el-button>
+  </span>
+        </el-dialog>
+
+                <el-dialog title="修改投资记录" :visible.sync="modifyinvest" width="450px" :before-close="handleClose">
+            <el-form :model="modifyinvest_form" :label-position="labelPosition" label-width="100px">
+            <el-input v-model="modifyinvest_form.id" auto-complete="off" type="hidden"></el-input>
+                <el-form-item label="平台名称">
+                    <el-select clearable class="filter-item" v-model="modifyinvest_form.p2p_id" placeholder="请选择平台" style="width:320px">
+                        <el-option v-for="item in  p2p_options" :key="item.id" :label="item.name" :value="item.id">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="投资金额">
+                    <el-input v-model="modifyinvest_form.money" auto-complete="off" style="width:320px"></el-input>
+                </el-form-item>
+                <el-form-item label="年化收益率">
+                    <el-input v-model="modifyinvest_form.profit" auto-complete="off" style="width:320px"></el-input>
+                </el-form-item>
+                <el-form-item label="开始日期">
+                    <el-date-picker v-model="modifyinvest_form.start_time" type="date" placeholder="选择开始日期" style="width:320px"></el-date-picker>
+                </el-form-item>
+                </el-date-picker>
+                <el-form-item label="到期日期">
+                    <el-date-picker v-model="modifyinvest_form.end_time" type="date" placeholder="选择到期日期" style="width:320px"></el-date-picker>
+                </el-form-item>
+                <el-form-item label="预期收益">
+                    <el-input v-model="modifyinvest_form.lucre" auto-complete="off" style="width:320px"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+    <el-button @click="handleClose">取 消</el-button>
+    <el-button type="primary" @click="modifyinvest_fun">确 定</el-button>
   </span>
         </el-dialog>
     </div>
@@ -56,7 +94,11 @@
 <script>
 import {
     investlist_api,
-    p2plist_api
+    p2plist_api,
+    addinvest_api,
+    getinvest_api,
+    modifyinvest_api,
+    delinvest_api
 
 } from '../api/service'
 export default {
@@ -67,18 +109,31 @@ export default {
             labelPosition: 'right',
             tableData: [],
             total_count: 0,
+            //添加invest的dialog
             addinvest: false,
+            //编辑invest的dialog
+            modifyinvest:false,
             //p2p下拉列表
             p2p_options: [],
+            //添加invest的form
             addinvest_form: {
                 p2p_id: "",
                 money: "",
                 profit: "",
                 start_time: "",
                 end_time: "",
-                lucre:""
+                lucre:"",
 
-            }
+            },
+            //编辑invest的form
+            modifyinvest_form:{
+                id:"",
+                p2p_id:"",
+                profit:"",
+                start_time:"",
+                end_time:"",
+                lucre:"",
+            },
         }
     },
     created() {
@@ -135,10 +190,110 @@ export default {
                     this.$message.error(res)
                 })
         },
+        //关闭dialog窗口时的回调函数
+        handleClose() {
+            this.modifyinvest = false;
+            this.addinvest= false;
+            //清空下拉选项数组
+            this.p2p_options.splice(0, this.p2p_options.length);
+        },
         addinvest_dialog() {
             this.addinvest = true
             this.getselectdata()
         },
+        //编辑invest时，获取单个invest信息
+        getinvest(id){
+            this.modifyinvest=true;
+            this.getselectdata()
+            getinvest_api(id)
+            .then((res)=>{
+                if(res.data.code==0){
+                    this.modifyinvest_form.id=res.data.data.id
+                    this.modifyinvest_form.p2p_id=res.data.data.p2p_id
+                    this.modifyinvest_form.profit=res.data.data.profit
+                    this.modifyinvest_form.money=res.data.data.money
+                    this.modifyinvest_form.start_time=res.data.data.start_time
+                    this.modifyinvest_form.end_time=res.data.data.end_time
+                    this.modifyinvest_form.lucre=res.data.data.lucre
+                }else{
+                    this.$message.error(res.data.msg)
+                }
+            })
+            .catch((res)=>{
+                this.$message.error(res)
+            })
+        },
+        //提交数据
+        addinvest_fun(){
+            var p2p_id=this.addinvest_form.p2p_id
+            var money=this.addinvest_form.money
+            var profit=this.addinvest_form.profit
+            var start_time=this.addinvest_form.start_time
+            var end_time=this.addinvest_form.end_time
+            var lucre=this.addinvest_form.lucre
+            addinvest_api(p2p_id,money,profit,start_time,end_time,lucre)
+            .then((res)=>{
+                if(res.data.code==0){
+                    this.$message.success("添加成功")
+                }else{
+                    this.$message.error(res.data.msg)
+                }
+            })
+            .catch((res)=>{
+                this.$message.error(res)
+            })
+
+        },
+        //编辑投资记录提交
+        modifyinvest_fun(){
+            var id=this.modifyinvest_form.id
+            var p2p_id=this.modifyinvest_form.p2p_id
+            var money=this.modifyinvest_form.money
+            var profit=this.modifyinvest_form.profit
+            var start_time=this.modifyinvest_form.start_time
+            var end_time=this.modifyinvest_form.end_time
+            var lucre=this.modifyinvest_form.lucre
+            modifyinvest_api(id,p2p_id,money,profit,start_time,end_time,lucre)
+            .then((res)=>{
+                if(res.data.code==0){
+                    this.modifyinvest=false;
+                    this.$message.success("编辑成功")
+                }else{
+                    this.$message.error(res.data.msg)
+                }
+            })
+            .catch((res)=>{
+                this.$message.error(res)
+            })
+        },
+        //删除invest
+        delinvest(id){
+            this.$confirm('此操作将删除该条目, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning',
+                center: true
+            }).then(() => {
+                //确认删除,调用删除接口
+                delinvest_api(id)
+                    .then((res) => {
+                        if (res.data.code == 0) {
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            })
+                        } else {
+                            this.$message.error(res.data.msg)
+                        }
+                    })
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });
+            });
+        },
+
 
         invest_status_format(row, column) {
             //0投资中,1已到期,2已完成
