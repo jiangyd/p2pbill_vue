@@ -1,0 +1,18 @@
+before_script:
+  - rm -rf ~/build/p2p_vue
+  - mkdir -p ~/build/p2p_vue/
+  - mv * .[^.]* ~/build/p2p_vue/
+  - cd ~/build/p2p_vue
+
+stages:
+  - deploy
+
+job1:
+  stage: deploy
+  script:
+    - npm install
+    - npm install --save axios element-ui 
+    - npm run build
+  tags:
+    - npm
+
